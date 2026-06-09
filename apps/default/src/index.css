@@ -1,0 +1,178 @@
+/* Tailwind CSS v3 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Conta Azul-inspired: #1565C0 = hsl(213, 76%, 43%) */
+    --background: 210 20% 98%;
+    --foreground: 215 30% 12%;
+    --muted: 210 20% 95%;
+    --muted-foreground: 215 15% 48%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 30% 12%;
+    --border: 214 20% 88%;
+    --input: 214 20% 88%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 30% 12%;
+    --primary: 213 76% 43%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 215 30% 12%;
+    --accent: 213 76% 96%;
+    --accent-foreground: 213 76% 43%;
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --ring: 213 76% 43%;
+    --radius: 0.5rem;
+    --success: 142 70% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 48%;
+    --warning-foreground: 0 0% 100%;
+    --sidebar: 213 76% 20%;
+    --sidebar-foreground: 213 30% 92%;
+    --sidebar-primary: 213 76% 43%;
+    --sidebar-accent: 213 76% 28%;
+  }
+
+  .dark {
+    --background: 215 30% 8%;
+    --foreground: 210 25% 92%;
+    --muted: 215 25% 12%;
+    --muted-foreground: 215 15% 55%;
+    --accent: 213 40% 18%;
+    --accent-foreground: 210 25% 92%;
+    --popover: 215 30% 10%;
+    --popover-foreground: 210 25% 92%;
+    --border: 215 25% 18%;
+    --input: 215 25% 18%;
+    --card: 215 30% 10%;
+    --card-foreground: 210 25% 92%;
+    --primary: 213 76% 60%;
+    --primary-foreground: 215 30% 8%;
+    --secondary: 215 25% 15%;
+    --secondary-foreground: 210 25% 92%;
+    --destructive: 0 63% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --ring: 213 76% 60%;
+    --success: 142 70% 42%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --sidebar: 215 30% 6%;
+    --sidebar-foreground: 215 20% 80%;
+    --sidebar-primary: 213 76% 60%;
+    --sidebar-accent: 215 30% 14%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-muted; }
+  ::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-muted-foreground; }
+}
+
+@layer utilities {
+  .animate-slide-in-right {
+    animation: slideInRight 0.25s ease-out;
+  }
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .text-success { color: hsl(var(--success)); }
+  .text-warning { color: hsl(var(--warning)); }
+  .bg-success { background-color: hsl(var(--success)); }
+  .bg-warning { background-color: hsl(var(--warning)); }
+  .bg-success\/10 { background-color: hsl(var(--success) / 0.1); }
+  .bg-warning\/10 { background-color: hsl(var(--warning) / 0.1); }
+  .border-success { border-color: hsl(var(--success)); }
+  .border-warning { border-color: hsl(var(--warning)); }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+:root {
+  --sidebar: hsl(0 0% 98%);
+  --sidebar-foreground: hsl(240 5.3% 26.1%);
+  --sidebar-primary: hsl(240 5.9% 10%);
+  --sidebar-primary-foreground: hsl(0 0% 98%);
+  --sidebar-accent: hsl(240 4.8% 95.9%);
+  --sidebar-accent-foreground: hsl(240 5.9% 10%);
+  --sidebar-border: hsl(220 13% 91%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+
+.dark {
+  --sidebar: hsl(240 5.9% 10%);
+  --sidebar-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-primary: hsl(224.3 76.3% 48%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(240 3.7% 15.9%);
+  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-border: hsl(240 3.7% 15.9%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Full screen spinner styles */
+.genesis__spinner-container {
+  position: fixed;
+  inset: 0;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.genesis__spinner-ring {
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid transparent;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: genesis__spin 1s linear infinite;
+}
+
+@keyframes genesis__spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .genesis__spinner-ring {
+    animation: none;
+    border-top-color: rgba(255, 255, 255, 0.9);
+  }
+}

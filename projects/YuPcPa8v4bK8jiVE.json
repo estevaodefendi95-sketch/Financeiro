@@ -1,0 +1,589 @@
+{
+  "root": {
+    "type": "root",
+    "children": [
+      {
+        "type": "text",
+        "id": "aa1bb2cc-dd3e-4ff5-6789-0aabbccddeef",
+        "text": {
+          "ops": [
+            {
+              "insert": "ERP SuaEmpresa Gestão — Build Memory"
+            },
+            {
+              "insert": "\n",
+              "attributes": {
+                "paragraph": true
+              }
+            }
+          ]
+        },
+        "format": null,
+        "collapsed": false,
+        "completed": false,
+        "children": [
+          {
+            "type": "text",
+            "id": "bb2cc3dd-ee4f-5001-2345-6789aabbccdd",
+            "text": {
+              "ops": [
+                {
+                  "insert": "Status: COMPLETE — Full ERP built and deployed",
+                  "attributes": {}
+                },
+                {
+                  "insert": "\n",
+                  "attributes": {
+                    "paragraph": true
+                  }
+                }
+              ]
+            },
+            "format": {
+              "node": "checkbox",
+              "children": null
+            },
+            "collapsed": false,
+            "completed": true,
+            "children": []
+          },
+          {
+            "type": "text",
+            "id": "cc3dd4ee-ff50-6001-3456-789aabbccdde",
+            "text": {
+              "ops": [
+                {
+                  "insert": "Space: 3gyi7jd06mqtza8q | Project: KWwih6hWd7DoNVbt",
+                  "attributes": {}
+                },
+                {
+                  "insert": "\n",
+                  "attributes": {
+                    "paragraph": true
+                  }
+                }
+              ]
+            },
+            "format": {
+              "node": "checkbox",
+              "children": null
+            },
+            "collapsed": false,
+            "completed": true,
+            "children": []
+          },
+          {
+            "type": "text",
+            "id": "dd4ee5ff-0016-7001-4567-89aabbccddef",
+            "text": {
+              "ops": [
+                {
+                  "insert": "Agent ID: 01KTMTG6R70CQ8BMZCRNR9FQ7T | Public ID: 01KTMTG6RCTPD53V99QX1ST67T",
+                  "attributes": {}
+                },
+                {
+                  "insert": "\n",
+                  "attributes": {
+                    "paragraph": true
+                  }
+                }
+              ]
+            },
+            "format": {
+              "node": "checkbox",
+              "children": null
+            },
+            "collapsed": false,
+            "completed": true,
+            "children": []
+          },
+          {
+            "type": "text",
+            "id": "ee5ff600-1027-8001-5678-9aabbccddef0",
+            "text": {
+              "ops": [
+                {
+                  "insert": "Automation Workflow: 01KTMTH0GB6YXWERR75E3S9C63 — Resumo Diário de Gestão",
+                  "attributes": {}
+                },
+                {
+                  "insert": "\n",
+                  "attributes": {
+                    "paragraph": true
+                  }
+                }
+              ]
+            },
+            "format": {
+              "node": "checkbox",
+              "children": null
+            },
+            "collapsed": false,
+            "completed": true,
+            "children": []
+          },
+          {
+            "type": "text",
+            "id": "ff6001ab-2038-9001-6789-0aabbccddef1",
+            "text": {
+              "ops": [
+                {
+                  "insert": "Modules Built",
+                  "attributes": {}
+                },
+                {
+                  "insert": "\n",
+                  "attributes": {
+                    "paragraph": true
+                  }
+                }
+              ]
+            },
+            "format": {
+              "node": "h2",
+              "children": null
+            },
+            "collapsed": false,
+            "completed": true,
+            "children": [
+              {
+                "type": "text",
+                "id": "aa7002bc-3049-0012-789a-1aabbccddef2",
+                "text": {
+                  "ops": [
+                    {
+                      "insert": "Auth (Login/Register), Layout (Sidebar + Header)",
+                      "attributes": {}
+                    },
+                    {
+                      "insert": "\n",
+                      "attributes": {
+                        "paragraph": true
+                      }
+                    }
+                  ]
+                },
+                "format": {
+                  "node": "bullet",
+                  "children": null
+                },
+                "collapsed": false,
+                "completed": true,
+                "children": []
+              },
+              {
+                "type": "text",
+                "id": "bb8003cd-4050-1023-89ab-2aabbccddef3",
+                "text": {
+                  "ops": [
+                    {
+                      "insert": "Dashboard (KPIs, Line/Bar charts, Recent transactions, Alerts)",
+                      "attributes": {}
+                    },
+                    {
+                      "insert": "\n",
+                      "attributes": {
+                        "paragraph": true
+                      }
+                    }
+                  ]
+                },
+                "format": {
+                  "node": "bullet",
+                  "children": null
+                },
+                "collapsed": false,
+                "completed": true,
+                "children": []
+              },
+              {
+                "type": "text",
+                "id": "cc9004de-5061-2034-9abc-3aabbccddef4",
+                "text": {
+                  "ops": [
+                    {
+                      "insert": "Financeiro: Contas a Pagar, Contas a Receber, Fluxo de Caixa, Conciliação Bancária",
+                      "attributes": {}
+                    },
+                    {
+                      "insert": "\n",
+                      "attributes": {
+                        "paragraph": true
+                      }
+                    }
+                  ]
+                },
+                "format": {
+                  "node": "bullet",
+                  "children": null
+                },
+                "collapsed": false,
+                "completed": true,
+                "children": []
+              },
+              {
+                "type": "text",
+                "id": "dd0005ef-6072-3045-abcd-4aabbccddef5",
+                "text": {
+                  "ops": [
+                    {
+                      "insert": "Vendas: Clientes, Pedidos de Venda, Produtos e Serviços",
+                      "attributes": {}
+                    },
+                    {
+                      "insert": "\n",
+                      "attributes": {
+                        "paragraph": true
+                      }
+                    }
+                  ]
+                },
+                "format": {
+                  "node": "bullet",
+                  "children": null
+                },
+                "collapsed": false,
+                "completed": true,
+                "children": []
+              },
+              {
+                "type": "text",
+                "id": "ee1006f0-7083-4056-bcde-5aabbccddef6",
+                "text": {
+                  "ops": [
+                    {
+                      "insert": "Estoque, Relatórios (DRE, gráficos pizza, Top 10 clientes), Configurações",
+                      "attributes": {}
+                    },
+                    {
+                      "insert": "\n",
+                      "attributes": {
+                        "paragraph": true
+                      }
+                    }
+                  ]
+                },
+                "format": {
+                  "node": "bullet",
+                  "children": null
+                },
+                "collapsed": false,
+                "completed": true,
+                "children": []
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "id": "ab1234cd-5678-90ef-abcd-ef1234567890",
+            "text": {
+              "ops": [
+                {
+                  "insert": "Supabase Integration",
+                  "attributes": {}
+                },
+                {
+                  "insert": "\n",
+                  "attributes": {
+                    "paragraph": true
+                  }
+                }
+              ]
+            },
+            "format": {
+              "node": "h2",
+              "children": null
+            },
+            "collapsed": false,
+            "completed": true,
+            "children": [
+              {
+                "type": "text",
+                "id": "bc2345de-6789-01fa-bcde-f01234567891",
+                "text": {
+                  "ops": [
+                    {
+                      "insert": "Supabase URL: https://jcqpuqhdfveleusjsxeo.supabase.co",
+                      "attributes": {}
+                    },
+                    {
+                      "insert": "\n",
+                      "attributes": {
+                        "paragraph": true
+                      }
+                    }
+                  ]
+                },
+                "format": {
+                  "node": "bullet",
+                  "children": null
+                },
+                "collapsed": false,
+                "completed": true,
+                "children": []
+              },
+              {
+                "type": "text",
+                "id": "cd3456ef-7890-12ab-cdef-012345678902",
+                "text": {
+                  "ops": [
+                    {
+                      "insert": "Files: src/lib/supabase.ts (REST client), src/lib/supabase-schema.sql (DB schema)",
+                      "attributes": {}
+                    },
+                    {
+                      "insert": "\n",
+                      "attributes": {
+                        "paragraph": true
+                      }
+                    }
+                  ]
+                },
+                "format": {
+                  "node": "bullet",
+                  "children": null
+                },
+                "collapsed": false,
+                "completed": true,
+                "children": []
+              },
+              {
+                "type": "text",
+                "id": "de4567f0-8901-23bc-def0-123456789013",
+                "text": {
+                  "ops": [
+                    {
+                      "insert": "Files: src/hooks/useSupabase.ts (hooks), useStore.ts updated with Supabase CRUD",
+                      "attributes": {}
+                    },
+                    {
+                      "insert": "\n",
+                      "attributes": {
+                        "paragraph": true
+                      }
+                    }
+                  ]
+                },
+                "format": {
+                  "node": "bullet",
+                  "children": null
+                },
+                "collapsed": false,
+                "completed": true,
+                "children": []
+              },
+              {
+                "type": "text",
+                "id": "ef5678a1-9012-34cd-ef01-234567890124",
+                "text": {
+                  "ops": [
+                    {
+                      "insert": "NEXT: User must run supabase-schema.sql in Supabase SQL Editor to create tables",
+                      "attributes": {}
+                    },
+                    {
+                      "insert": "\n",
+                      "attributes": {
+                        "paragraph": true
+                      }
+                    }
+                  ]
+                },
+                "format": {
+                  "node": "bullet",
+                  "children": null
+                },
+                "collapsed": false,
+                "completed": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "id": "f1234567-89ab-cdef-0123-456789abcdef",
+            "text": {
+              "ops": [
+                {
+                  "insert": "Phase 1 COMPLETE — Full ERP Rebuilt",
+                  "attributes": {}
+                },
+                {
+                  "insert": "\n",
+                  "attributes": {
+                    "paragraph": true
+                  }
+                }
+              ]
+            },
+            "format": {
+              "node": "h2",
+              "children": null
+            },
+            "collapsed": false,
+            "completed": true,
+            "children": [
+              {
+                "type": "text",
+                "id": "a2345678-9abc-def0-1234-56789abcdef0",
+                "text": {
+                  "ops": [
+                    {
+                      "insert": "Auth: Login + Register + Onboarding Wizard (3-step)",
+                      "attributes": {}
+                    },
+                    {
+                      "insert": "\n",
+                      "attributes": {
+                        "paragraph": true
+                      }
+                    }
+                  ]
+                },
+                "format": {
+                  "node": "bullet",
+                  "children": null
+                },
+                "collapsed": false,
+                "completed": true,
+                "children": []
+              },
+              {
+                "type": "text",
+                "id": "b3456789-abcd-ef01-2345-6789abcdef01",
+                "text": {
+                  "ops": [
+                    {
+                      "insert": "Dashboard: KPIs + Area/Pie charts + Alerts + Last 10 tx",
+                      "attributes": {}
+                    },
+                    {
+                      "insert": "\n",
+                      "attributes": {
+                        "paragraph": true
+                      }
+                    }
+                  ]
+                },
+                "format": {
+                  "node": "bullet",
+                  "children": null
+                },
+                "collapsed": false,
+                "completed": true,
+                "children": []
+              },
+              {
+                "type": "text",
+                "id": "c456789a-bcde-f012-3456-789abcdef012",
+                "text": {
+                  "ops": [
+                    {
+                      "insert": "Calendar Cash Flow View (CalendarioPage) + slide-over",
+                      "attributes": {}
+                    },
+                    {
+                      "insert": "\n",
+                      "attributes": {
+                        "paragraph": true
+                      }
+                    }
+                  ]
+                },
+                "format": {
+                  "node": "bullet",
+                  "children": null
+                },
+                "collapsed": false,
+                "completed": true,
+                "children": []
+              },
+              {
+                "type": "text",
+                "id": "d56789ab-cdef-0123-4567-89abcdef0123",
+                "text": {
+                  "ops": [
+                    {
+                      "insert": "Transaction CRUD (TransacoesPage) + status system + form slide-over",
+                      "attributes": {}
+                    },
+                    {
+                      "insert": "\n",
+                      "attributes": {
+                        "paragraph": true
+                      }
+                    }
+                  ]
+                },
+                "format": {
+                  "node": "bullet",
+                  "children": null
+                },
+                "collapsed": false,
+                "completed": true,
+                "children": []
+              },
+              {
+                "type": "text",
+                "id": "e6789abc-def0-1234-5678-9abcdef01234",
+                "text": {
+                  "ops": [
+                    {
+                      "insert": "New Sidebar (dark blue) + AppLayout + full route wiring",
+                      "attributes": {}
+                    },
+                    {
+                      "insert": "\n",
+                      "attributes": {
+                        "paragraph": true
+                      }
+                    }
+                  ]
+                },
+                "format": {
+                  "node": "bullet",
+                  "children": null
+                },
+                "collapsed": false,
+                "completed": true,
+                "children": []
+              },
+              {
+                "type": "text",
+                "id": "f789abcd-ef01-2345-6789-abcdef012345",
+                "text": {
+                  "ops": [
+                    {
+                      "insert": "NEXT: Phase 2 — Categories AI, Name Learning, OFX Import, Reconciliation",
+                      "attributes": {}
+                    },
+                    {
+                      "insert": "\n",
+                      "attributes": {
+                        "paragraph": true
+                      }
+                    }
+                  ]
+                },
+                "format": {
+                  "node": "bullet",
+                  "children": null
+                },
+                "collapsed": false,
+                "completed": false,
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "preferences": {
+    "defaultView": "list",
+    "avatar": {
+      "type": "emoji",
+      "value": "🔌"
+    }
+  }
+}

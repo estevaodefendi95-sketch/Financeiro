@@ -1,0 +1,69 @@
+{
+  "version": "2",
+  "flowTitle": "SuaEmpresa — Resumo Diário de Gestão",
+  "trigger": {
+    "valid": true,
+    "displayName": "Gerar Resumo ERP",
+    "type": "MANUAL",
+    "settings": {
+      "inputUiInfo": {},
+      "paramsSchema": {
+        "type": "object",
+        "properties": {
+          "empresa": {
+            "type": "string",
+            "description": "Input for empresa"
+          },
+          "periodo": {
+            "type": "string",
+            "description": "Input for periodo"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "actions": [
+    {
+      "name": "5fa948dc-4f64-4c24-b232-08077fff09a3",
+      "valid": true,
+      "displayName": "Gerar Resumo Financeiro com IA",
+      "type": "PIECE",
+      "settings": {
+        "pieceName": "@taskade/automade-internalpiece-openai",
+        "pieceVersion": "1.0.0",
+        "actionName": "ai.ask",
+        "input": {
+          "model": "openai/gpt-5.4-mini",
+          "prompt": "Gere um resumo executivo de gestão empresarial para a empresa {{ trigger[\"empresa\"] }} referente ao período {{ trigger[\"periodo\"] }}. O resumo deve incluir: situação financeira geral, principais indicadores de desempenho, alertas críticos e recomendações estratégicas. Formate em português brasileiro com linguagem executiva."
+        }
+      }
+    },
+    {
+      "name": "70c675ba-4fd8-45eb-966f-fb6d5e98b0af",
+      "valid": false,
+      "displayName": "Salvar Resumo no Projeto ERP",
+      "type": "PIECE",
+      "settings": {
+        "pieceName": "@taskade/automade-internalpiece-taskade",
+        "pieceVersion": "1.0.0",
+        "actionName": "task.create",
+        "input": {
+          "content": "Resumo ERP {{ trigger[\"periodo\"] }} — {{ 5fa948dc-4f64-4c24-b232-08077fff09a3[\"result\"] }}",
+          "projectId": {
+            "type": "flow-template-variable-input-type",
+            "id": "KWwih6hWd7DoNVbt"
+          }
+        }
+      }
+    }
+  ],
+  "variables": {
+    "KWwih6hWd7DoNVbt": {
+      "id": "KWwih6hWd7DoNVbt",
+      "rank": "V",
+      "type": "string",
+      "format": "taskade-project-id"
+    }
+  }
+}

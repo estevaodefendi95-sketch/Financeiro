@@ -1,2 +1,0 @@
-# Financeiro
-Exported from Taskade
