@@ -108,6 +108,26 @@ Retorne APENAS um array JSON: [{"date": "YYYY-MM-DD", "description": "desc", "am
   return extractJSON(text) as ParsedTransaction[];
 }
 
+// ── Credit card invoice PDF parse ────────────────────────────
+
+export interface ParsedInvoiceItem {
+  purchaseDate: string;
+  description: string;
+  amount: number;
+  installmentNumber?: number;
+  totalInstallments?: number;
+}
+
+export async function parseCreditCardInvoicePDF(content: string, cardName: string): Promise<ParsedInvoiceItem[]> {
+  const text = await callClaude(
+    'Você é um parser de faturas de cartão de crédito brasileiras. Extraia todas as compras e retorne APENAS um JSON array.',
+    `Extraia todas as compras desta fatura do cartão ${cardName}:
+${content.slice(0, 8000)}
+Retorne APENAS um array JSON: [{"purchaseDate": "YYYY-MM-DD", "description": "desc", "amount": 0.00, "installmentNumber": null, "totalInstallments": null}]`
+  );
+  return extractJSON(text) as ParsedInvoiceItem[];
+}
+
 // ── Cash flow AI narrative ───────────────────────────────────
 
 export async function getCashFlowNarrative(cashFlowData: unknown): Promise<string> {

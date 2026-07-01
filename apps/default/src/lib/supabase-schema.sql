@@ -82,7 +82,49 @@ CREATE TABLE IF NOT EXISTS transactions (
   recurrence TEXT DEFAULT 'nenhuma' CHECK (recurrence IN ('nenhuma','diaria','semanal','mensal','anual')),
   notes TEXT,
   company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  -- Cartão de crédito: transaction agregada da fatura (1 por mês/cartão). Compras
+  -- individuais NÃO vão mais aqui — ver credit_card_items abaixo.
+  credit_card_id UUID REFERENCES credit_cards(id),
+  installment_number INT,
+  total_installments INT,
+  card_invoice_date DATE
+);
+
+-- ── CREDIT CARDS ────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS credit_cards (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  brand TEXT,
+  credit_limit NUMERIC(15,2),
+  closing_day INT,
+  due_day INT,
+  is_active BOOLEAN DEFAULT TRUE,
+  last_four_digits TEXT,
+  color TEXT DEFAULT '#6366f1',
+  statement_match_pattern TEXT, -- usado para reconhecer o débito da fatura no extrato bancário
   created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ── CREDIT CARD ITEMS ───────────────────────────────────────
+-- Compras individuais do cartão: aparecem na tela do cartão e na DRE por
+-- categoria, mas NÃO no Calendário de Caixa nem em Contas a Pagar (só a
+-- transaction agregada da fatura, em `transactions.credit_card_id`, aparece lá).
+CREATE TABLE IF NOT EXISTS credit_card_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id UUID NOT NULL REFERENCES companies(id),
+  credit_card_id UUID NOT NULL REFERENCES credit_cards(id),
+  invoice_month DATE NOT NULL, -- mês de referência da fatura, sempre dia=01
+  description VARCHAR NOT NULL,
+  original_description TEXT,
+  amount NUMERIC NOT NULL,
+  purchase_date DATE NOT NULL,
+  installment_number INT,
+  total_installments INT,
+  category_id UUID REFERENCES categories(id),
+  supplier_id UUID REFERENCES suppliers(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ── CUSTOMERS ───────────────────────────────────────────────
@@ -204,3 +246,6 @@ CREATE INDEX IF NOT EXISTS idx_customers_company ON customers(company_id);
 CREATE INDEX IF NOT EXISTS idx_products_company ON products(company_id);
 CREATE INDEX IF NOT EXISTS idx_sales_orders_company ON sales_orders(company_id);
 CREATE INDEX IF NOT EXISTS idx_stock_movements_product ON stock_movements(product_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_credit_card ON transactions(credit_card_id);
+CREATE INDEX IF NOT EXISTS idx_credit_card_items_card_month ON credit_card_items(credit_card_id, invoice_month);
+CREATE INDEX IF NOT EXISTS idx_credit_card_items_company ON credit_card_items(company_id);

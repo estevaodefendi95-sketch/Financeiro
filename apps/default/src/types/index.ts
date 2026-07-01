@@ -164,13 +164,47 @@ export interface BankStatementLine {
 export interface CreditCard {
   id: string;
   name: string;
-  brand: 'visa' | 'mastercard' | 'elo' | 'amex' | 'hipercard';
-  limit: number;
+  brand?: 'visa' | 'mastercard' | 'elo' | 'amex' | 'hipercard';
+  creditLimit?: number;
   closingDay: number;
   dueDay: number;
+  isActive?: boolean;
+  lastFourDigits?: string;
   color?: string;
-  bankAccountId?: string;
+  statementMatchPattern?: string; // usado para reconhecer o débito da fatura no extrato bancário
   companyId: string;
+  createdAt?: string;
+}
+
+// Compra individual do cartão — aparece na tela do cartão e na DRE por
+// categoria, mas NÃO no Calendário de Caixa nem em Contas a Pagar. Só a
+// transaction agregada da fatura (Transaction.creditCardId) aparece lá.
+export interface CreditCardItem {
+  id: string;
+  companyId: string;
+  creditCardId: string;
+  invoiceMonth: string;       // ISO YYYY-MM-01 — mês de referência da fatura
+  description: string;
+  originalDescription?: string;
+  amount: number;
+  purchaseDate: string;
+  installmentNumber?: number;
+  totalInstallments?: number;
+  categoryId?: string;
+  supplierId?: string;
+  createdAt?: string;
+}
+
+// Regra aprendida de categorização (aplicada por substring da descrição) —
+// tabela já existe e é usada no banco (category_rules), frontend ainda não lia.
+export interface CategoryRule {
+  id: string;
+  companyId: string;
+  pattern: string;
+  categoryId: string;
+  timesApplied: number;
+  lastApplied?: string;
+  createdAt?: string;
 }
 
 // ── NAME RULES ───────────────────────────────────────────────
@@ -203,6 +237,32 @@ export interface Customer {
   notes?: string;
   companyId: string;
   createdAt: string;
+}
+
+export interface Supplier {
+  id: string;
+  companyId: string;
+  name: string;
+  type?: PersonType;
+  cpfCnpj?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  notes?: string;
+  isActive?: boolean;
+  defaultCategoryId?: string;
+  defaultPaymentMethod?: string;
+  pixKeyType?: string;
+  pixKey?: string;
+  isEmployee?: boolean;
+  baseSalary?: number;
+  salaryPaymentDay?: number;
+  biweeklyPaymentDay?: number;
+  role?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // ── PRODUCTS ─────────────────────────────────────────────────

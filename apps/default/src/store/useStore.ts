@@ -3,7 +3,8 @@ import { persist } from 'zustand/middleware';
 import type {
   User, Company, Transaction, Customer, Product, SalesOrder,
   StockMovement, BankAccount, Category, BankStatementLine,
-  CostCenter, CreditCard, NameRule as NameRuleType, Notification
+  CostCenter, CreditCard, CreditCardItem, Supplier, CategoryRule,
+  NameRule as NameRuleType, Notification
 } from '../types';
 import { computeStatus } from '../types';
 import { sbInsert, sbUpdate, sbDelete, sbSelect, setSupabaseToken, supabaseAuthApi, toSnake, mapRows } from '../lib/supabase';
@@ -91,6 +92,9 @@ interface AppState {
   bankStatements: BankStatementLine[];
   costCenters: CostCenter[];
   creditCards: CreditCard[];
+  creditCardItems: CreditCardItem[];
+  suppliers: Supplier[];
+  categoryRules: CategoryRule[];
   nameRules: NameRuleType[];
   notifications: Notification[];
   isDbConnected: boolean;
@@ -153,6 +157,21 @@ interface AppState {
   updateCreditCard: (id: string, c: Partial<CreditCard>) => void;
   deleteCreditCard: (id: string) => void;
 
+  // Credit Card Items
+  addCreditCardItem: (i: CreditCardItem) => void;
+  bulkAddCreditCardItems: (items: CreditCardItem[]) => void;
+  updateCreditCardItem: (id: string, i: Partial<CreditCardItem>) => void;
+  deleteCreditCardItem: (id: string) => void;
+
+  // Suppliers
+  addSupplier: (s: Supplier) => void;
+  updateSupplier: (id: string, s: Partial<Supplier>) => void;
+  deleteSupplier: (id: string) => void;
+
+  // Category Rules
+  addCategoryRule: (r: CategoryRule) => void;
+  updateCategoryRule: (id: string, r: Partial<CategoryRule>) => void;
+
   // Name Rules
   addNameRule: (r: NameRuleType) => void;
   updateNameRule: (id: string, r: Partial<NameRuleType>) => void;
@@ -174,6 +193,9 @@ const sbUp = <T>(table: string, id: string, data: Record<string, unknown>) => {
 const sbDel = (table: string, id: string) => {
   sbDelete(table, id).catch(e => console.warn('[sb delete]', table, e));
 };
+const sbBulk = <T>(table: string, rows: Record<string, unknown>[]) => {
+  sbInsert<T>(table, rows.map(toSnake) as unknown as Partial<T>).catch(e => console.warn('[sb bulk insert]', table, e));
+};
 
 export const useAppStore = create<AppState>()(
   persist(
@@ -191,6 +213,9 @@ export const useAppStore = create<AppState>()(
         bankStatements: [],
         costCenters: seed.costCenters,
         creditCards: [],
+        creditCardItems: [],
+        suppliers: [],
+        categoryRules: [],
         nameRules: [],
         notifications: seed.notifications,
         isDbConnected: false,
@@ -207,12 +232,16 @@ export const useAppStore = create<AppState>()(
             const p: Record<string, string> = { order: 'created_at.desc' };
             if (companyId && companyId !== 'company-001') p['company_id'] = `eq.${companyId}`;
             const cp = (companyId && companyId !== 'company-001') ? { company_id: `eq.${companyId}` } : {};
-            const [txns, custs, prods, cats, banks] = await Promise.all([
+            const [txns, custs, prods, cats, banks, cards, cardItems, sups, catRules] = await Promise.all([
               sbSelect<Record<string, unknown>>('transactions', p),
               sbSelect<Record<string, unknown>>('customers', { order: 'name.asc', ...cp }),
               sbSelect<Record<string, unknown>>('products', { order: 'name.asc', ...cp }),
               sbSelect<Record<string, unknown>>('categories', { order: 'name.asc', ...cp }),
               sbSelect<Record<string, unknown>>('bank_accounts', cp),
+              sbSelect<Record<string, unknown>>('credit_cards', { order: 'name.asc', ...cp }),
+              sbSelect<Record<string, unknown>>('credit_card_items', { order: 'invoice_month.desc', ...cp }),
+              sbSelect<Record<string, unknown>>('suppliers', { order: 'name.asc', ...cp }),
+              sbSelect<Record<string, unknown>>('category_rules', cp),
             ]);
             set({
               isDbConnected: true,
@@ -221,6 +250,10 @@ export const useAppStore = create<AppState>()(
               ...(prods.length > 0 && { products: mapRows<Product>(prods) }),
               ...(cats.length > 0 && { categories: mapRows<Category>(cats) }),
               ...(banks.length > 0 && { bankAccounts: mapRows<BankAccount>(banks) }),
+              ...(cards.length > 0 && { creditCards: mapRows<CreditCard>(cards) }),
+              ...(cardItems.length > 0 && { creditCardItems: mapRows<CreditCardItem>(cardItems) }),
+              ...(sups.length > 0 && { suppliers: mapRows<Supplier>(sups) }),
+              ...(catRules.length > 0 && { categoryRules: mapRows<CategoryRule>(catRules) }),
             });
           } catch (e) { console.warn('[Supabase] offline mode', e); set({ isDbConnected: false }); }
         },
@@ -264,9 +297,21 @@ export const useAppStore = create<AppState>()(
         updateCostCenter: (id, c) => set(s => ({ costCenters: s.costCenters.map(cx => cx.id === id ? { ...cx, ...c } : cx) })),
         deleteCostCenter: (id) => set(s => ({ costCenters: s.costCenters.filter(cx => cx.id !== id) })),
 
-        addCreditCard: (c) => set(s => ({ creditCards: [...s.creditCards, c] })),
-        updateCreditCard: (id, c) => set(s => ({ creditCards: s.creditCards.map(cx => cx.id === id ? { ...cx, ...c } : cx) })),
-        deleteCreditCard: (id) => set(s => ({ creditCards: s.creditCards.filter(cx => cx.id !== id) })),
+        addCreditCard: (c) => { set(s => ({ creditCards: [...s.creditCards, c] })); sb('credit_cards', c as unknown as Record<string, unknown>); },
+        updateCreditCard: (id, c) => { set(s => ({ creditCards: s.creditCards.map(cx => cx.id === id ? { ...cx, ...c } : cx) })); sbUp('credit_cards', id, c as unknown as Record<string, unknown>); },
+        deleteCreditCard: (id) => { set(s => ({ creditCards: s.creditCards.filter(cx => cx.id !== id) })); sbDel('credit_cards', id); },
+
+        addCreditCardItem: (i) => { set(s => ({ creditCardItems: [i, ...s.creditCardItems] })); sb('credit_card_items', i as unknown as Record<string, unknown>); },
+        bulkAddCreditCardItems: (items) => { set(s => ({ creditCardItems: [...items, ...s.creditCardItems] })); sbBulk('credit_card_items', items as unknown as Record<string, unknown>[]); },
+        updateCreditCardItem: (id, i) => { set(s => ({ creditCardItems: s.creditCardItems.map(ix => ix.id === id ? { ...ix, ...i } : ix) })); sbUp('credit_card_items', id, i as unknown as Record<string, unknown>); },
+        deleteCreditCardItem: (id) => { set(s => ({ creditCardItems: s.creditCardItems.filter(ix => ix.id !== id) })); sbDel('credit_card_items', id); },
+
+        addSupplier: (sup) => { set(s => ({ suppliers: [sup, ...s.suppliers] })); sb('suppliers', sup as unknown as Record<string, unknown>); },
+        updateSupplier: (id, sup) => { set(s => ({ suppliers: s.suppliers.map(sx => sx.id === id ? { ...sx, ...sup } : sx) })); sbUp('suppliers', id, sup as unknown as Record<string, unknown>); },
+        deleteSupplier: (id) => { set(s => ({ suppliers: s.suppliers.filter(sx => sx.id !== id) })); sbDel('suppliers', id); },
+
+        addCategoryRule: (r) => { set(s => ({ categoryRules: [r, ...s.categoryRules] })); sb('category_rules', r as unknown as Record<string, unknown>); },
+        updateCategoryRule: (id, r) => { set(s => ({ categoryRules: s.categoryRules.map(rx => rx.id === id ? { ...rx, ...r } : rx) })); sbUp('category_rules', id, r as unknown as Record<string, unknown>); },
 
         addNameRule: (r) => set(s => ({ nameRules: [...s.nameRules, r] })),
         updateNameRule: (id, r) => set(s => ({ nameRules: s.nameRules.map(rx => rx.id === id ? { ...rx, ...r } : rx) })),
@@ -278,6 +323,6 @@ export const useAppStore = create<AppState>()(
         clearNotifications: () => set({ notifications: [] }),
       };
     },
-    { name: 'erp-app-v2', partialize: (state) => ({ company: state.company, transactions: state.transactions, customers: state.customers, products: state.products, bankAccounts: state.bankAccounts, categories: state.categories, costCenters: state.costCenters }) }
+    { name: 'erp-app-v2', partialize: (state) => ({ company: state.company, transactions: state.transactions, customers: state.customers, products: state.products, bankAccounts: state.bankAccounts, categories: state.categories, costCenters: state.costCenters, creditCards: state.creditCards, creditCardItems: state.creditCardItems, suppliers: state.suppliers, categoryRules: state.categoryRules }) }
   )
 );

@@ -13,6 +13,7 @@ import ContasPagarPage from './pages/financeiro/ContasPagarPage';
 import ContasReceberPage from './pages/financeiro/ContasReceberPage';
 import FluxoCaixaPage from './pages/financeiro/FluxoCaixaPage';
 import ConciliacaoPage from './pages/financeiro/ConciliacaoPage';
+import CartoesPage from './pages/financeiro/CartoesPage';
 import ClientesPage from './pages/vendas/ClientesPage';
 import PedidosPage from './pages/vendas/PedidosPage';
 import ProdutosPage from './pages/vendas/ProdutosPage';
@@ -54,7 +55,7 @@ export default function App() {
           <Route path="financeiro/receber" element={<ContasReceberPage />} />
           <Route path="financeiro/fluxo" element={<FluxoCaixaPage />} />
           <Route path="financeiro/conciliacao" element={<ConciliacaoPage />} />
-          <Route path="financeiro/cartoes" element={<div className="p-8 text-center text-muted-foreground">Cartões de Crédito — Em breve (Phase 3)</div>} />
+          <Route path="financeiro/cartoes" element={<CartoesPage />} />
           {/* Vendas */}
           <Route path="vendas/clientes" element={<ClientesPage />} />
           <Route path="vendas/pedidos" element={<PedidosPage />} />
