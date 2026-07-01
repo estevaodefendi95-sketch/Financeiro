@@ -59,11 +59,12 @@ export default function DashboardPage() {
 
   const kpis = useMemo(() => {
     const saldoTotal = bankAccounts.reduce((s, b) => s + b.balance, 0);
-    const receitasMes = txWithStatus.filter(t => t.type === 'receita' && (t.status === 'recebido' || t.status === 'pago') && new Date(t.paymentDate || t.dueDate).getMonth() === thisMonth && new Date(t.paymentDate || t.dueDate).getFullYear() === thisYear).reduce((s, t) => s + t.amount, 0);
-    const despesasMes = txWithStatus.filter(t => t.type === 'despesa' && t.status === 'pago' && new Date(t.paymentDate || t.dueDate).getMonth() === thisMonth && new Date(t.paymentDate || t.dueDate).getFullYear() === thisYear).reduce((s, t) => s + t.amount, 0);
+    const receitasMes = txWithStatus.filter(t => t.type === 'receita' && (t.status === 'recebido' || t.status === 'pago') && (t.paymentDate || t.dueDate) && new Date((t.paymentDate || t.dueDate) as string).getMonth() === thisMonth && new Date((t.paymentDate || t.dueDate) as string).getFullYear() === thisYear).reduce((s, t) => s + t.amount, 0);
+    const despesasMes = txWithStatus.filter(t => t.type === 'despesa' && t.status === 'pago' && (t.paymentDate || t.dueDate) && new Date((t.paymentDate || t.dueDate) as string).getMonth() === thisMonth && new Date((t.paymentDate || t.dueDate) as string).getFullYear() === thisYear).reduce((s, t) => s + t.amount, 0);
     const resultadoMes = receitasMes - despesasMes;
     const aReceberD30 = txWithStatus.filter(t => t.type === 'receita' && (t.status === 'pendente' || t.status === 'atrasado' || t.status === 'agendado')).reduce((s, t) => s + t.amount, 0);
-    const aPagarD30 = txWithStatus.filter(t => t.type === 'despesa' && (t.status === 'pendente' || t.status === 'atrasado' || t.status === 'agendado')).reduce((s, t) => s + t.amount, 0);
+    // Pendências sem data (isUndated) não têm previsão de saída de caixa — mesma regra do Fluxo de Caixa/Calendário
+    const aPagarD30 = txWithStatus.filter(t => t.type === 'despesa' && !t.isUndated && (t.status === 'pendente' || t.status === 'atrasado' || t.status === 'agendado')).reduce((s, t) => s + t.amount, 0);
     const atrasados = txWithStatus.filter(t => t.status === 'atrasado');
     return { saldoTotal, receitasMes, despesasMes, resultadoMes, aReceberD30, aPagarD30, atrasados };
   }, [txWithStatus, bankAccounts, thisMonth, thisYear]);
@@ -73,8 +74,8 @@ export default function DashboardPage() {
     return Array.from({ length: 6 }, (_, i) => {
       const d = new Date(thisYear, thisMonth - 5 + i, 1);
       const mo = d.getMonth(); const yr = d.getFullYear();
-      const receitas = txWithStatus.filter(t => t.type === 'receita' && (t.status === 'recebido' || t.status === 'pago') && new Date(t.dueDate).getMonth() === mo && new Date(t.dueDate).getFullYear() === yr).reduce((s, t) => s + t.amount, 0);
-      const despesas = txWithStatus.filter(t => t.type === 'despesa' && t.status === 'pago' && new Date(t.dueDate).getMonth() === mo && new Date(t.dueDate).getFullYear() === yr).reduce((s, t) => s + t.amount, 0);
+      const receitas = txWithStatus.filter(t => t.type === 'receita' && (t.status === 'recebido' || t.status === 'pago') && (t.paymentDate || t.dueDate) && new Date((t.paymentDate || t.dueDate) as string).getMonth() === mo && new Date((t.paymentDate || t.dueDate) as string).getFullYear() === yr).reduce((s, t) => s + t.amount, 0);
+      const despesas = txWithStatus.filter(t => t.type === 'despesa' && t.status === 'pago' && (t.paymentDate || t.dueDate) && new Date((t.paymentDate || t.dueDate) as string).getMonth() === mo && new Date((t.paymentDate || t.dueDate) as string).getFullYear() === yr).reduce((s, t) => s + t.amount, 0);
       return { name: getMonthName(mo), receitas, despesas };
     });
   }, [txWithStatus, thisMonth, thisYear]);
@@ -82,7 +83,7 @@ export default function DashboardPage() {
   // Top 5 expense categories pie
   const pieData = useMemo(() => {
     const map = new Map<string, number>();
-    txWithStatus.filter(t => t.type === 'despesa' && t.status === 'pago' && new Date(t.dueDate).getMonth() === thisMonth).forEach(t => {
+    txWithStatus.filter(t => t.type === 'despesa' && t.status === 'pago' && (t.paymentDate || t.dueDate) && new Date((t.paymentDate || t.dueDate) as string).getMonth() === thisMonth).forEach(t => {
       const name = t.categoryName || 'Outros';
       map.set(name, (map.get(name) || 0) + t.amount);
     });

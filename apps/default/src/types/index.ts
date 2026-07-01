@@ -68,7 +68,8 @@ export interface Transaction {
   description: string;
   originalDescription?: string;
   amount: number;
-  dueDate: string;          // ISO YYYY-MM-DD
+  dueDate: string | null;   // ISO YYYY-MM-DD, null quando isUndated=true
+  isUndated?: boolean;      // pendência bancária sem previsão de pagamento (sem due_date)
   paymentDate?: string;
   status: TransactionStatus;
   categoryId?: string;
@@ -318,13 +319,15 @@ export interface OnboardingData {
 
 export function computeStatus(t: Transaction): TransactionStatus {
   if (t.status === 'pago' || t.status === 'recebido' || t.status === 'cancelado' || t.status === 'aguardando_aprovacao') return t.status;
+  if (!t.dueDate) return t.status;
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const due = new Date(t.dueDate); due.setHours(0, 0, 0, 0);
   if (due < today) return 'atrasado';
   return t.status;
 }
 
-export function daysOverdue(dueDate: string): number {
+export function daysOverdue(dueDate: string | null | undefined): number {
+  if (!dueDate) return 0;
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const due = new Date(dueDate); due.setHours(0, 0, 0, 0);
   const diff = Math.floor((today.getTime() - due.getTime()) / 86400000);

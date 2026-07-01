@@ -9,8 +9,10 @@ export function formatCurrency(value: number): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
 
-export function formatDate(date: string | Date): string {
+export function formatDate(date: string | Date | null | undefined): string {
+  if (!date) return 'Sem data';
   const d = typeof date === 'string' ? new Date(date + 'T00:00:00') : date;
+  if (isNaN(d.getTime())) return 'Sem data';
   return new Intl.DateTimeFormat('pt-BR').format(d);
 }
 

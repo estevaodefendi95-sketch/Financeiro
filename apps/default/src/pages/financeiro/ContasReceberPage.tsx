@@ -8,7 +8,7 @@ import { computeStatus, daysOverdue } from '../../types';
 export default function ContasReceberPage() {
   const navigate = useNavigate();
   const { transactions } = useAppStore();
-  const receitas = transactions.filter(t => t.type === 'receita').map(t => ({ ...t, computedStatus: computeStatus(t) })).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  const receitas = transactions.filter(t => t.type === 'receita').map(t => ({ ...t, computedStatus: computeStatus(t) })).sort((a, b) => new Date(a.dueDate as string).getTime() - new Date(b.dueDate as string).getTime());
   const totals = { pendente: receitas.filter(t => t.computedStatus === 'pendente' || t.computedStatus === 'atrasado').reduce((s, t) => s + t.amount, 0), recebido: receitas.filter(t => t.computedStatus === 'recebido' || t.computedStatus === 'pago').reduce((s, t) => s + t.amount, 0) };
   return (
     <div className="p-4 sm:p-6 space-y-6">

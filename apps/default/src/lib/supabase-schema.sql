@@ -66,7 +66,8 @@ CREATE TABLE IF NOT EXISTS transactions (
   type TEXT NOT NULL CHECK (type IN ('receita','despesa')),
   description TEXT NOT NULL,
   amount NUMERIC(15,2) NOT NULL,
-  due_date DATE NOT NULL,
+  due_date DATE,                          -- NULLABLE: pendências sem previsão de pagamento (ver is_undated)
+  is_undated BOOLEAN NOT NULL DEFAULT FALSE, -- pendência bancária sem data de vencimento definida
   payment_date DATE,
   status TEXT NOT NULL DEFAULT 'pendente' CHECK (status IN ('pendente','pago','vencido','recebido','cancelado')),
   category TEXT,

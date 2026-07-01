@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { BarChart3, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, DollarSign, AlertTriangle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useAppStore } from '../store/useStore';
 import { formatCurrency, getMonthName } from '../lib/utils';
@@ -14,22 +14,29 @@ export default function RelatoriosPage() {
   const txs = useMemo(() => transactions.map(t => ({ ...t, cs: computeStatus(t) })), [transactions]);
 
   const dre = useMemo(() => {
-    const receitas = txs.filter(t => t.type === 'receita' && (t.cs === 'recebido' || t.cs === 'pago') && new Date(t.dueDate).getMonth() === thisMonth).reduce((s, t) => s + t.amount, 0);
-    const despesas = txs.filter(t => t.type === 'despesa' && t.cs === 'pago' && new Date(t.dueDate).getMonth() === thisMonth).reduce((s, t) => s + t.amount, 0);
+    const receitas = txs.filter(t => t.type === 'receita' && (t.cs === 'recebido' || t.cs === 'pago') && t.dueDate && new Date(t.dueDate).getMonth() === thisMonth).reduce((s, t) => s + t.amount, 0);
+    const despesas = txs.filter(t => t.type === 'despesa' && t.cs === 'pago' && !t.isUndated && t.dueDate && new Date(t.dueDate).getMonth() === thisMonth).reduce((s, t) => s + t.amount, 0);
     return { receitas, despesas, resultado: receitas - despesas };
   }, [txs, thisMonth]);
+
+  // Despesas sem data (is_undated): custo já incorrido contabilmente, mas sem período definido —
+  // bloco separado, não entra no resultado do mês corrente acima.
+  const semData = useMemo(() => {
+    const items = txs.filter(t => t.type === 'despesa' && t.isUndated && t.status !== 'cancelado');
+    return { count: items.length, total: items.reduce((s, t) => s + t.amount, 0) };
+  }, [txs]);
 
   const barData = useMemo(() => Array.from({ length: 6 }, (_, i) => {
     const d = new Date(thisYear, thisMonth - 5 + i, 1);
     const mo = d.getMonth(); const yr = d.getFullYear();
-    const r = txs.filter(t => t.type === 'receita' && (t.cs === 'recebido' || t.cs === 'pago') && new Date(t.dueDate).getMonth() === mo && new Date(t.dueDate).getFullYear() === yr).reduce((s, t) => s + t.amount, 0);
-    const d2 = txs.filter(t => t.type === 'despesa' && t.cs === 'pago' && new Date(t.dueDate).getMonth() === mo && new Date(t.dueDate).getFullYear() === yr).reduce((s, t) => s + t.amount, 0);
+    const r = txs.filter(t => t.type === 'receita' && (t.cs === 'recebido' || t.cs === 'pago') && t.dueDate && new Date(t.dueDate).getMonth() === mo && new Date(t.dueDate).getFullYear() === yr).reduce((s, t) => s + t.amount, 0);
+    const d2 = txs.filter(t => t.type === 'despesa' && t.cs === 'pago' && !t.isUndated && t.dueDate && new Date(t.dueDate).getMonth() === mo && new Date(t.dueDate).getFullYear() === yr).reduce((s, t) => s + t.amount, 0);
     return { name: getMonthName(mo), receitas: r, despesas: d2 };
   }), [txs, thisMonth, thisYear]);
 
   const catData = useMemo(() => {
     const map = new Map<string, number>();
-    txs.filter(t => t.type === 'despesa' && t.cs === 'pago' && new Date(t.dueDate).getMonth() === thisMonth).forEach(t => { const n = t.categoryName || 'Outros'; map.set(n, (map.get(n) || 0) + t.amount); });
+    txs.filter(t => t.type === 'despesa' && t.cs === 'pago' && !t.isUndated && t.dueDate && new Date(t.dueDate).getMonth() === thisMonth).forEach(t => { const n = t.categoryName || 'Outros'; map.set(n, (map.get(n) || 0) + t.amount); });
     return Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([name, value]) => ({ name, value }));
   }, [txs, thisMonth]);
 
@@ -49,6 +56,22 @@ export default function RelatoriosPage() {
           ))}
         </div>
       </div>
+
+      {/* DRE — Despesas sem data (custo já incorrido, sem previsão de pagamento) */}
+      {semData.count > 0 && (
+        <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-300 dark:border-amber-800 rounded-xl p-5">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-2.5">
+              <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-amber-900 dark:text-amber-300">Despesas Sem Data — Custo Incorrido</h3>
+                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">{semData.count} lançamento{semData.count > 1 ? 's' : ''} sem previsão de pagamento. Contabilmente já existem como custo, mas não entram no resultado do mês acima.</p>
+              </div>
+            </div>
+            <p className="text-xl font-bold text-amber-900 dark:text-amber-300">{formatCurrency(semData.total)}</p>
+          </div>
+        </div>
+      )}
 
       {/* Charts */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">

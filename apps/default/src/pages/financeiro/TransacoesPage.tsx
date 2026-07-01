@@ -48,6 +48,8 @@ function TransactionForm({ initial, onSave, onClose }: { initial?: Partial<Trans
     customerId: initial?.customerId || '',
     notes: initial?.notes || '',
   });
+  const [semVencimento, setSemVencimento] = useState(!!initial?.isUndated);
+  const isUndatedActive = semVencimento && form.type === 'despesa';
 
   const upd = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -59,12 +61,14 @@ function TransactionForm({ initial, onSave, onClose }: { initial?: Partial<Trans
     if (!amount || amount <= 0) { toast.error('Informe um valor válido'); return; }
     const cat = categories.find(c => c.id === form.categoryId);
     const cust = customers.find(c => c.id === form.customerId);
+    const isUndated = isUndatedActive;
     const tx: Transaction = {
       id: initial?.id || uuidv4(),
       type: form.type,
       description: form.description,
       amount,
-      dueDate: toISODate(form.dueDate),
+      dueDate: isUndated ? null : toISODate(form.dueDate),
+      isUndated,
       status: form.status,
       categoryId: form.categoryId || undefined,
       categoryName: cat?.name,
@@ -116,10 +120,20 @@ function TransactionForm({ initial, onSave, onClose }: { initial?: Partial<Trans
             <input className="w-full border border-border rounded-xl px-4 py-2.5 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm" placeholder="0,00" value={form.amount} onChange={e => upd('amount', amountFmt(e.target.value))} inputMode="numeric" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">Vencimento *</label>
-            <input type="date" className="w-full border border-border rounded-xl px-4 py-2.5 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm" value={toISODate(form.dueDate)} onChange={e => upd('dueDate', fromISODate(e.target.value))} />
+            <label className="block text-sm font-medium text-foreground mb-1.5">Vencimento {isUndatedActive ? '' : '*'}</label>
+            <input type="date" disabled={isUndatedActive} className={cn('w-full border border-border rounded-xl px-4 py-2.5 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm', isUndatedActive && 'opacity-50 cursor-not-allowed bg-muted')} value={toISODate(form.dueDate)} onChange={e => upd('dueDate', fromISODate(e.target.value))} />
           </div>
         </div>
+
+        {form.type === 'despesa' && (
+          <label className="flex items-start gap-2.5 p-3 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/10 cursor-pointer select-none">
+            <input type="checkbox" className="rounded mt-0.5" checked={semVencimento} onChange={e => setSemVencimento(e.target.checked)} />
+            <span className="text-sm">
+              <span className="font-medium text-foreground">Sem data de vencimento</span>
+              <span className="block text-xs text-muted-foreground mt-0.5">Pendência bancária sem previsão de pagamento. Fica fora do Calendário e do Fluxo de Caixa, mas aparece em destaque em "Pendências sem previsão" e entra na DRE.</span>
+            </span>
+          </label>
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -205,7 +219,7 @@ export default function TransacoesPage() {
       if (filterStatus && tx.computedStatus !== filterStatus) return false;
       if (filterType && tx.type !== filterType) return false;
       return true;
-    }).sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
+    }).sort((a, b) => (b.dueDate ? new Date(b.dueDate).getTime() : 0) - (a.dueDate ? new Date(a.dueDate).getTime() : 0));
   }, [txWithStatus, search, filterStatus, filterType]);
 
   const totals = useMemo(() => ({

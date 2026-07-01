@@ -40,7 +40,7 @@ export default function CalendarioPage() {
   }, [txWithStatus]);
 
   const periodSummary = useMemo(() => {
-    const monthTx = txWithStatus.filter(tx => { const d = new Date(tx.dueDate + 'T00:00:00'); return d.getMonth() === currentMonth.getMonth() && d.getFullYear() === currentMonth.getFullYear(); });
+    const monthTx = txWithStatus.filter(tx => { if (!tx.dueDate) return false; const d = new Date(tx.dueDate + 'T00:00:00'); return d.getMonth() === currentMonth.getMonth() && d.getFullYear() === currentMonth.getFullYear(); });
     const receitas = monthTx.filter(t => t.type === 'receita').reduce((s, t) => s + t.amount, 0);
     const despesas = monthTx.filter(t => t.type === 'despesa').reduce((s, t) => s + t.amount, 0);
     const pagas = monthTx.filter(t => t.type === 'despesa' && (t.computedStatus === 'pago' || t.computedStatus === 'recebido')).reduce((s, t) => s + t.amount, 0);

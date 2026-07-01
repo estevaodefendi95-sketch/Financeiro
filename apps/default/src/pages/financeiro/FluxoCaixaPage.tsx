@@ -14,15 +14,15 @@ export default function FluxoCaixaPage() {
     return Array.from({ length: 6 }, (_, i) => {
       const d = new Date(thisYear, thisMonth - 5 + i, 1);
       const mo = d.getMonth(); const yr = d.getFullYear();
-      const txs = transactions.map(t => ({ ...t, cs: computeStatus(t) }));
-      const receitas = txs.filter(t => t.type === 'receita' && (t.cs === 'recebido' || t.cs === 'pago') && new Date(t.dueDate).getMonth() === mo && new Date(t.dueDate).getFullYear() === yr).reduce((s, t) => s + t.amount, 0);
-      const despesas = txs.filter(t => t.type === 'despesa' && t.cs === 'pago' && new Date(t.dueDate).getMonth() === mo && new Date(t.dueDate).getFullYear() === yr).reduce((s, t) => s + t.amount, 0);
+      const txs = transactions.map(t => ({ ...t, cs: computeStatus(t) })).filter(t => !t.isUndated && t.dueDate);
+      const receitas = txs.filter(t => t.type === 'receita' && (t.cs === 'recebido' || t.cs === 'pago') && new Date(t.dueDate as string).getMonth() === mo && new Date(t.dueDate as string).getFullYear() === yr).reduce((s, t) => s + t.amount, 0);
+      const despesas = txs.filter(t => t.type === 'despesa' && t.cs === 'pago' && new Date(t.dueDate as string).getMonth() === mo && new Date(t.dueDate as string).getFullYear() === yr).reduce((s, t) => s + t.amount, 0);
       return { name: `${getMonthName(mo)}/${yr.toString().slice(2)}`, receitas, despesas, saldo: receitas - despesas };
     });
   }, [transactions, thisMonth, thisYear]);
 
   const saldoInicial = bankAccounts.reduce((s, b) => s + b.balance, 0);
-  const projectedNegative = saldoInicial - transactions.filter(t => { const cs = computeStatus(t); return t.type === 'despesa' && (cs === 'pendente' || cs === 'atrasado'); }).reduce((s, t) => s + t.amount, 0) < 0;
+  const projectedNegative = saldoInicial - transactions.filter(t => { const cs = computeStatus(t); return t.type === 'despesa' && !t.isUndated && (cs === 'pendente' || cs === 'atrasado'); }).reduce((s, t) => s + t.amount, 0) < 0;
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
