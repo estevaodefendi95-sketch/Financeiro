@@ -7,7 +7,7 @@ import Modal from '../../components/ui/Modal';
 import InlineCategoryEditor from '../../components/ui/InlineCategoryEditor';
 import { useAppStore } from '../../store/useStore';
 import { formatCurrency, formatDate, toISODate } from '../../lib/utils';
-import { getOrCreateCardCategory, computeInvoiceDueDate } from '../../lib/creditCardUtils';
+import { getOrCreateCartaoCreditoCategory, getCardParentCategory, computeInvoiceDueDate } from '../../lib/creditCardUtils';
 import { parseCreditCardInvoicePDF, type ParsedInvoiceItem } from '../../lib/claude';
 import type { CreditCardItem, CategoryRule, Transaction } from '../../types';
 
@@ -82,6 +82,14 @@ function suggestCategoryId(description: string, rules: CategoryRule[]): string |
   return matches[0].categoryId;
 }
 
+function normalizeDescription(desc: string): string {
+  return desc.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function itemDedupKey(i: { installmentNumber?: number; totalInstallments?: number; description: string }): string {
+  return `${i.installmentNumber ?? ''}|${i.totalInstallments ?? ''}|${normalizeDescription(i.description)}`;
+}
+
 function currentInvoiceMonth(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
@@ -103,6 +111,7 @@ export default function CreditCardInvoiceImport({ creditCardId, onDone, onClose 
 
   const card = creditCards.find(c => c.id === creditCardId);
   const despesaCategories = useMemo(() => categories.filter(c => c.type === 'despesa' || c.type === 'both'), [categories]);
+  const cartaoCreditoCategoryId = useMemo(() => getCardParentCategory(categories, company.id)?.id, [categories, company.id]);
   const total = useMemo(() => items.reduce((s, i) => s + i.amount, 0), [items]);
 
   const handleFile = async (file: File) => {
@@ -146,17 +155,17 @@ export default function CreditCardInvoiceImport({ creditCardId, onDone, onClose 
 
   const handleConfirm = () => {
     if (!card) return;
-    const cardCategoryId = getOrCreateCardCategory(card, categories, addCategory);
+    const cardCategoryId = getOrCreateCartaoCreditoCategory(company.id, categories, addCategory);
     const dueDate = computeInvoiceDueDate(card, invoiceMonth);
 
-    // Uma parcela já lançada (mesmo cartão/mês/descrição/valor/data de compra)
-    // não deve ser duplicada ao reimportar a mesma fatura.
+    // Uma parcela já lançada (mesmo cartão/mês + installment_number/total_installments
+    // + descrição normalizada) não deve ser duplicada ao reimportar a mesma fatura.
     const existingKeys = new Set(
       creditCardItems
         .filter(ci => ci.creditCardId === card.id && ci.invoiceMonth === invoiceMonth)
-        .map(ci => `${ci.description}|${ci.amount}|${ci.purchaseDate}`)
+        .map(itemDedupKey)
     );
-    const newItems = items.filter(i => !existingKeys.has(`${i.description}|${i.amount}|${i.purchaseDate}`));
+    const newItems = items.filter(i => !existingKeys.has(itemDedupKey(i)));
     const skipped = items.length - newItems.length;
 
     const cardItems: CreditCardItem[] = newItems.map(i => ({
@@ -251,7 +260,12 @@ export default function CreditCardInvoiceImport({ creditCardId, onDone, onClose 
                   <span className="text-muted-foreground w-20 flex-shrink-0">{formatDate(item.purchaseDate)}</span>
                   <span className="flex-1 min-w-0 truncate text-foreground" title={item.description}>{item.description}</span>
                   {item.installmentNumber && <span className="text-xs text-muted-foreground flex-shrink-0">{item.installmentNumber}/{item.totalInstallments}</span>}
-                  <InlineCategoryEditor value={item.categoryId} categories={despesaCategories} onChange={categoryId => updateItemCategory(item.id, categoryId)} />
+                  <InlineCategoryEditor
+                    value={item.categoryId || cartaoCreditoCategoryId}
+                    categories={despesaCategories}
+                    lockedParentId={cartaoCreditoCategoryId}
+                    onChange={categoryId => updateItemCategory(item.id, categoryId)}
+                  />
                   <span className="font-semibold text-foreground w-24 text-right flex-shrink-0">{formatCurrency(item.amount)}</span>
                 </div>
               ))}

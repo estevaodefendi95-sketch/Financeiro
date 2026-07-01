@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { CreditCard as CreditCardIcon, ChevronLeft, Upload, Check } from 'lucide-react';
+import { CreditCard as CreditCardIcon, ChevronLeft, ChevronDown, ChevronUp, Upload, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppStore } from '../../store/useStore';
 import { cn, formatCurrency, formatDate, getMonthFullName } from '../../lib/utils';
 import { computeInvoiceDueDate, getCardParentCategory } from '../../lib/creditCardUtils';
 import InlineCategoryEditor from '../../components/ui/InlineCategoryEditor';
 import CreditCardInvoiceImport from './CreditCardInvoiceImport';
+import type { Category, CreditCardItem } from '../../types';
 
 function monthLabel(invoiceMonth: string): string {
   const [y, m] = invoiceMonth.split('-');
@@ -17,10 +18,34 @@ function currentMonthStr(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
 }
 
+function InvoiceItemRow({ item, despesaCategories, cartaoCreditoCategoryId, onCategoryChange }: {
+  item: CreditCardItem;
+  despesaCategories: Category[];
+  cartaoCreditoCategoryId: string | undefined;
+  onCategoryChange: (itemId: string, categoryId: string) => void;
+}) {
+  return (
+    <div className="px-4 py-2.5 flex items-center gap-3 text-sm">
+      <span className="text-muted-foreground w-20 flex-shrink-0">{formatDate(item.purchaseDate)}</span>
+      <span className="flex-1 min-w-0 truncate text-foreground" title={item.description}>{item.description}</span>
+      {item.installmentNumber && <span className="text-xs text-muted-foreground flex-shrink-0">Parcela {item.installmentNumber}/{item.totalInstallments}</span>}
+      <InlineCategoryEditor
+        value={item.categoryId || cartaoCreditoCategoryId}
+        categories={despesaCategories}
+        lockedParentId={cartaoCreditoCategoryId}
+        onChange={categoryId => onCategoryChange(item.id, categoryId)}
+      />
+      <span className="font-semibold text-foreground w-24 text-right flex-shrink-0">{formatCurrency(item.amount)}</span>
+    </div>
+  );
+}
+
 export default function CartoesPage() {
   const { creditCards, creditCardItems, transactions, categories, company, updateCreditCardItem, updateTransaction } = useAppStore();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+
+  const [expandedFutureMonth, setExpandedFutureMonth] = useState<string | null>(null);
 
   const selectedCard = creditCards.find(c => c.id === selectedCardId) || null;
   const despesaCategories = useMemo(() => categories.filter(c => c.type === 'despesa' || c.type === 'both'), [categories]);
@@ -146,18 +171,13 @@ export default function CartoesPage() {
               </div>
               <div className="divide-y divide-border">
                 {g.items.map(item => (
-                  <div key={item.id} className="px-4 py-2.5 flex items-center gap-3 text-sm">
-                    <span className="text-muted-foreground w-20 flex-shrink-0">{formatDate(item.purchaseDate)}</span>
-                    <span className="flex-1 min-w-0 truncate text-foreground" title={item.description}>{item.description}</span>
-                    {item.installmentNumber && <span className="text-xs text-muted-foreground flex-shrink-0">Parcela {item.installmentNumber}/{item.totalInstallments}</span>}
-                    <InlineCategoryEditor
-                      value={item.categoryId || cartaoCreditoCategoryId}
-                      categories={despesaCategories}
-                      lockedParentId={cartaoCreditoCategoryId}
-                      onChange={categoryId => updateCreditCardItem(item.id, { categoryId })}
-                    />
-                    <span className="font-semibold text-foreground w-24 text-right flex-shrink-0">{formatCurrency(item.amount)}</span>
-                  </div>
+                  <InvoiceItemRow
+                    key={item.id}
+                    item={item}
+                    despesaCategories={despesaCategories}
+                    cartaoCreditoCategoryId={cartaoCreditoCategoryId}
+                    onCategoryChange={(itemId, categoryId) => updateCreditCardItem(itemId, { categoryId })}
+                  />
                 ))}
               </div>
               <div className="px-4 py-3 bg-muted/40 border-t border-border flex items-center justify-between">
@@ -172,16 +192,42 @@ export default function CartoesPage() {
       {futureGroups.length > 0 && (
         <div className="space-y-2">
           <h2 className="text-sm font-semibold text-muted-foreground">Parcelas futuras</h2>
-          <div className="bg-card border border-border rounded-xl divide-y divide-border overflow-hidden">
-            {futureGroups.map(g => (
-              <div key={g.invoiceMonth} className="px-4 py-3 flex items-center justify-between text-sm">
-                <div>
-                  <p className="font-medium text-foreground capitalize">{monthLabel(g.invoiceMonth)}</p>
-                  <p className="text-xs text-muted-foreground">Vencimento {formatDate(g.dueDate)} · {g.items.length} item{g.items.length !== 1 ? 's' : ''}</p>
+          <div className="bg-card border border-border rounded-xl overflow-hidden divide-y divide-border">
+            {futureGroups.map(g => {
+              const expanded = expandedFutureMonth === g.invoiceMonth;
+              return (
+                <div key={g.invoiceMonth}>
+                  <button
+                    onClick={() => setExpandedFutureMonth(expanded ? null : g.invoiceMonth)}
+                    className="w-full px-4 py-3 flex items-center justify-between text-sm hover:bg-muted/40 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
+                      <div>
+                        <p className="font-medium text-foreground capitalize">{monthLabel(g.invoiceMonth)}</p>
+                        <p className="text-xs text-muted-foreground">Vencimento {formatDate(g.dueDate)} · {g.items.length} item{g.items.length !== 1 ? 's' : ''}</p>
+                      </div>
+                    </div>
+                    <span className="font-semibold text-foreground">{formatCurrency(g.subtotal)}</span>
+                  </button>
+                  {expanded && (
+                    <div className="bg-muted/20">
+                      <div className="divide-y divide-border">
+                        {g.items.map(item => (
+                          <InvoiceItemRow
+                            key={item.id}
+                            item={item}
+                            despesaCategories={despesaCategories}
+                            cartaoCreditoCategoryId={cartaoCreditoCategoryId}
+                            onCategoryChange={(itemId, categoryId) => updateCreditCardItem(itemId, { categoryId })}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <span className="font-semibold text-foreground">{formatCurrency(g.subtotal)}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

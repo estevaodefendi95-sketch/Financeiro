@@ -15,22 +15,20 @@ export function getCardParentCategory(categories: Category[], companyId: string)
   return categories.find(c => c.name === CARD_PARENT_CATEGORY_NAME && !c.parentId && c.type === 'despesa' && c.companyId === companyId);
 }
 
-// Garante que existe uma subcategoria com o nome do cartão, filha de "Cartão de
-// Crédito" (cria a categoria pai também se a empresa ainda não tiver uma).
-// Retorna o categoryId a usar na transaction agregada da fatura.
-export function getOrCreateCardCategory(
-  card: CreditCard,
+// Garante que existe a categoria "Cartão de Crédito" para a empresa (cria se
+// a empresa foi criada antes do trigger de categorias padrão existir).
+// Retorna o categoryId a usar na transaction agregada da fatura — arquitetura
+// confirmada: NÃO cria subcategoria com o nome do cartão. Subcategorias dentro
+// de "Cartão de Crédito" são criadas manualmente pelo usuário, por tipo de
+// gasto (ex: Alimentação, Vestuário, Assinaturas).
+export function getOrCreateCartaoCreditoCategory(
+  companyId: string,
   categories: Category[],
   addCategory: (c: Category) => void
 ): string {
-  let parent = getCardParentCategory(categories, card.companyId);
-  if (!parent) {
-    parent = { id: uuidv4(), name: CARD_PARENT_CATEGORY_NAME, type: 'despesa', color: '#6366f1', companyId: card.companyId, active: true };
-    addCategory(parent);
-  }
-  const existing = categories.find(c => c.parentId === parent!.id && c.name === card.name);
+  const existing = getCardParentCategory(categories, companyId);
   if (existing) return existing.id;
   const id = uuidv4();
-  addCategory({ id, name: card.name, type: 'despesa', color: card.color || '#6366f1', parentId: parent.id, companyId: card.companyId, active: true });
+  addCategory({ id, name: CARD_PARENT_CATEGORY_NAME, type: 'despesa', color: '#6366f1', companyId, active: true });
   return id;
 }
