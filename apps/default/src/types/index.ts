@@ -69,7 +69,12 @@ export interface Transaction {
   originalDescription?: string;
   amount: number;
   dueDate: string | null;   // ISO YYYY-MM-DD, null quando isUndated=true
-  isUndated?: boolean;      // pendência bancária sem previsão de pagamento (sem due_date)
+  // Pendência sem data de vencimento definida — NÃO é uma categoria. Aparece
+  // só no painel "Pendências sem previsão" de Contas a Pagar, nunca no
+  // Calendário, e entra na DRE pelo mês atual. Não confundir com a categoria
+  // "Cartão de Crédito" (ver CreditCardItem), que é sobre transactions de
+  // fatura total que TÊM data e aparecem normalmente no Calendário/Contas a Pagar.
+  isUndated?: boolean;
   paymentDate?: string;
   status: TransactionStatus;
   categoryId?: string;
@@ -178,7 +183,10 @@ export interface CreditCard {
 
 // Compra individual do cartão — aparece na tela do cartão e na DRE por
 // categoria, mas NÃO no Calendário de Caixa nem em Contas a Pagar. Só a
-// transaction agregada da fatura (Transaction.creditCardId) aparece lá.
+// transaction agregada da fatura (Transaction.creditCardId, categoria
+// "Cartão de Crédito", com dueDate preenchido) aparece lá. Isso é diferente
+// de Transaction.isUndated: aquela flag marca despesas sem data definida
+// ("Pendências sem previsão"), não tem relação com cartão de crédito.
 export interface CreditCardItem {
   id: string;
   companyId: string;

@@ -194,7 +194,14 @@ const sbDel = (table: string, id: string) => {
   sbDelete(table, id).catch(e => console.warn('[sb delete]', table, e));
 };
 const sbBulk = <T>(table: string, rows: Record<string, unknown>[]) => {
-  sbInsert<T>(table, rows.map(toSnake) as unknown as Partial<T>).catch(e => console.warn('[sb bulk insert]', table, e));
+  // PostgREST rejects a batch insert if the row objects don't all share the
+  // same set of keys, so normalize every row to the union of keys seen
+  // across the batch (missing optional fields become null instead of being
+  // omitted) before sending.
+  const snaked = rows.map(toSnake);
+  const allKeys = Array.from(new Set(snaked.flatMap(r => Object.keys(r))));
+  const normalized = snaked.map(r => Object.fromEntries(allKeys.map(k => [k, r[k] ?? null])));
+  sbInsert<T>(table, normalized as unknown as Partial<T>).catch(e => console.warn('[sb bulk insert]', table, e));
 };
 
 export const useAppStore = create<AppState>()(

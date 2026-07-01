@@ -94,7 +94,7 @@ interface Props {
 }
 
 export default function CreditCardInvoiceImport({ creditCardId, onDone, onClose }: Props) {
-  const { creditCards, categories, categoryRules, company, addCategory, bulkAddCreditCardItems, addTransaction } = useAppStore();
+  const { creditCards, categories, categoryRules, company, creditCardItems, addCategory, bulkAddCreditCardItems, addTransaction } = useAppStore();
   const [step, setStep] = useState<'upload' | 'processing' | 'review'>('upload');
   const [items, setItems] = useState<ReviewItem[]>([]);
   const [invoiceMonth, setInvoiceMonth] = useState(currentInvoiceMonth());
@@ -149,19 +149,30 @@ export default function CreditCardInvoiceImport({ creditCardId, onDone, onClose 
     const cardCategoryId = getOrCreateCardCategory(card, categories, addCategory);
     const dueDate = computeInvoiceDueDate(card, invoiceMonth);
 
-    const cardItems: CreditCardItem[] = items.map(i => ({
+    // Uma parcela já lançada (mesmo cartão/mês/descrição/valor/data de compra)
+    // não deve ser duplicada ao reimportar a mesma fatura.
+    const existingKeys = new Set(
+      creditCardItems
+        .filter(ci => ci.creditCardId === card.id && ci.invoiceMonth === invoiceMonth)
+        .map(ci => `${ci.description}|${ci.amount}|${ci.purchaseDate}`)
+    );
+    const newItems = items.filter(i => !existingKeys.has(`${i.description}|${i.amount}|${i.purchaseDate}`));
+    const skipped = items.length - newItems.length;
+
+    const cardItems: CreditCardItem[] = newItems.map(i => ({
       id: i.id,
       companyId: company.id,
       creditCardId: card.id,
       invoiceMonth,
       description: i.description,
+      originalDescription: i.description,
       amount: i.amount,
       purchaseDate: i.purchaseDate,
       installmentNumber: i.installmentNumber,
       totalInstallments: i.totalInstallments,
       categoryId: i.categoryId,
     }));
-    bulkAddCreditCardItems(cardItems);
+    if (cardItems.length > 0) bulkAddCreditCardItems(cardItems);
 
     const [y, m] = invoiceMonth.split('-');
     const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -180,7 +191,11 @@ export default function CreditCardInvoiceImport({ creditCardId, onDone, onClose 
     };
     addTransaction(invoiceTx);
 
-    toast.success(`Fatura importada: ${items.length} itens, ${formatCurrency(total)}`);
+    toast.success(
+      skipped > 0
+        ? `Fatura importada: ${cardItems.length} itens novos, ${skipped} já existentes ignorados, total ${formatCurrency(total)}`
+        : `Fatura importada: ${items.length} itens, ${formatCurrency(total)}`
+    );
     onDone();
   };
 
